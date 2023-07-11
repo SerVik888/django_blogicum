@@ -180,7 +180,7 @@ class PostDetailView(DetailView):
         return context
 
 
-class PostCreateView(LoginRequiredMixin,  CreateView):
+class PostCreateView(LoginRequiredMixin, CreateView):
     """Обрабатывает запрос на Создание нового поста"""
 
     model = Post

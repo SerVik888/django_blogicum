@@ -17,7 +17,6 @@ class PostForm(forms.ModelForm):
         widgets = {
             'pub_date': forms.DateInput(attrs={'type': 'date'})
         }
-        # fields = ['username', 'first_name', 'last_name', 'email']
 
 
 class CommentForm(forms.ModelForm):

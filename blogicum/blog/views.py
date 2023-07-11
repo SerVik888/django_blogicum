@@ -154,10 +154,14 @@ class PostDetailView(DetailView):
         если это не автор ставим ограничения на просмотр публикаций
         """
         post = self.get_object()
-        if (post.author != self.request.user and
-            (not post.is_published
-             or not post.category.is_published
-             or post.pub_date > datetime.datetime.now(pytz.utc))):
+        if (
+                post.author != self.request.user
+                and (
+                not post.is_published
+                or not post.category.is_published
+                or post.pub_date > datetime.datetime.now(pytz.utc)
+                )
+        ):
             raise Http404(
                 "Страница не опубликована."
             )
@@ -206,8 +210,8 @@ class PostUpdateView(UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         return (
-            self.request.user.is_authenticated and
-            self.get_object().author == self.request.user
+            self.request.user.is_authenticated
+            and self.get_object().author == self.request.user
         )
 
     def get_redirect_url(self):

@@ -1,6 +1,7 @@
 from django.contrib import admin
 from blog.constants import NUM_OF_WORDS_OF_TEXT, NUM_OF_WORDS_OF_TITLE
 from blog.models import Category, Comment, Location, Post
+from django.utils.html import format_html
 
 admin.site.empty_value_display = 'Не задано'
 
@@ -14,8 +15,9 @@ class PostAdmin(admin.ModelAdmin):
         'get_short_text',
         'pub_date',
         'category',
+        'is_published',
         'get_comment_count',
-        'is_published'
+        'image_tag',
     )
     list_editable = (
         'is_published',
@@ -37,7 +39,17 @@ class PostAdmin(admin.ModelAdmin):
 
     @admin.display(description='Комментарии')
     def get_comment_count(self, obj):
+        """Получаем колличество комментариев в посте."""
         return obj.comments.count()
+
+    @admin.display(description='Изображение')
+    def image_tag(self, obj):
+        """Получаем картинку к посту."""
+        if obj.image:
+            return format_html(
+                '<img src="{}" width="50" height="50" />'.format(obj.image.url)
+            )
+        return 'Не найдено'
 
 
 admin.site.register(Category)

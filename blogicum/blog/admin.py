@@ -1,5 +1,4 @@
 from django.contrib import admin
-
 from blog.constants import NUM_OF_WORDS_OF_TEXT, NUM_OF_WORDS_OF_TITLE
 from blog.models import Category, Comment, Location, Post
 
@@ -15,6 +14,7 @@ class PostAdmin(admin.ModelAdmin):
         'get_short_text',
         'pub_date',
         'category',
+        'get_comment_count',
         'is_published'
     )
     list_editable = (
@@ -34,6 +34,10 @@ class PostAdmin(admin.ModelAdmin):
     def get_short_text(self, obj):
         """Получаем начальные слова текста описания поста."""
         return f'{" ".join(obj.text.split()[:NUM_OF_WORDS_OF_TEXT])} ...'
+
+    @admin.display(description='Комментарии')
+    def get_comment_count(self, obj):
+        return obj.comments.count()
 
 
 admin.site.register(Category)

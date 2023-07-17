@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+from django.urls import reverse
 
 from blog.constants import LIMITING_NUMBER_OF_SUMBOLS
 from core.models import PublishedModel
 
-# User = get_user_model()
+User = get_user_model()
 
 
 class Category(PublishedModel):
@@ -84,19 +85,35 @@ class Post(PublishedModel):
         default_related_name = 'posts'
         ordering = ('-pub_date', 'title')
 
+    def get_absolute_url(self):
+        # return reverse('blog:post_detail', kwargs={'pk': self.pk})
+        return reverse('blog:post_detail', kwargs={'post_id': self.pk})
+
     def __str__(self):
         return self.title[:LIMITING_NUMBER_OF_SUMBOLS]
 
 
 class Comment(models.Model):
+    """Модель комментария, связана с моделямью User и Post """
+
     text = models.TextField('Комменрарий')
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comment',
+        related_name='comments',
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    author = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    author = models.ForeignKey(
+        get_user_model(),
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
 
     class Meta:
+        verbose_name = 'комментарий'
+        verbose_name_plural = 'Комментарии'
+        default_related_name = 'comments'
         ordering = ('created_at',)
+
+    def __str__(self):
+        return self.text[:LIMITING_NUMBER_OF_SUMBOLS]

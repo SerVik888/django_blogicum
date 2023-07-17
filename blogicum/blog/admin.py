@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from blog.constants import NUM_OF_WORDS_OF_TEXT, NUM_OF_WORDS_OF_TITLE
-from blog.models import Category, Location, Post
+from blog.models import Category, Comment, Location, Post
 
 admin.site.empty_value_display = 'Не задано'
 
@@ -38,3 +38,4 @@ class PostAdmin(admin.ModelAdmin):
 
 admin.site.register(Category)
 admin.site.register(Location)
+admin.site.register(Comment)

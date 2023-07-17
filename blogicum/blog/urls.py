@@ -5,29 +5,26 @@ from blog import views
 app_name = 'blog'
 
 urlpatterns = [
-    # пути для бработки Списков
     path('', views.PostListView.as_view(), name='index'),
     path(
         'category/<slug:post_category>/',
-        views.category_posts,
+        views.CategoryListView.as_view(),
         name='category_posts'
     ),
 
-    # пути для бработки Профиля
     path(
-        'profile/<str:username>/',
-        views.profile_detail,
+        'profile/<slug:username>/',
+        views.ProfileDetailView.as_view(),
         name='profile'
     ),
     path(
-        'edit_profile/<slug:pk>/',
+        'edit_profile/',
         views.UserUpdateView.as_view(),
         name='edit_profile'
     ),
 
-    # пути для бработки Поста
     path(
-        'posts/<int:pk>/',
+        'posts/<int:post_id>/',
         views.PostDetailView.as_view(),
         name='post_detail'
     ),
@@ -37,27 +34,26 @@ urlpatterns = [
         name='create_post'
     ),
     path(
-        'posts/<int:pk>/edit/',
+        'posts/<int:post_id>/edit/',
         views.PostUpdateView.as_view(),
         name='edit_post'
     ),
     path(
-        'posts/<int:pk>/delete/',
+        'posts/<int:post_id>/delete/',
         views.PostDeleteView.as_view(),
         name='delete_post'
     ),
 
-    # пути для бработки Коментариев
-    path('posts/<int:pk>/comment/',
+    path('posts/<int:post_id>/comment/',
          views.CommentCreateView.as_view(),
          name='add_comment'),
     path(
-        'posts/<int:post_id>/edit_comment/<int:pk>',
+        'posts/<int:post_id>/edit_comment/<int:comment_id>/',
         views.CommentUpdateView.as_view(),
         name='edit_comment'
     ),
     path(
-        'posts/<int:post_id>/delete_comment/<int:pk>',
+        'posts/<int:post_id>/delete_comment/<int:comment_id>/',
         views.CommentDeleteView.as_view(),
         name='delete_comment'
     ),

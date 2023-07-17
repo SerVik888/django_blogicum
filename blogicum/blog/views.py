@@ -77,7 +77,7 @@ class CategoryListView(PostListMixin):
 
     def get_queryset(self):
         self.category = get_object_or_404(
-            Category, is_published=True,  slug=self.kwargs['post_category']
+            Category, is_published=True, slug=self.kwargs['post_category']
         )
         return self.select_posts.filter(
             category__slug=self.kwargs['post_category']

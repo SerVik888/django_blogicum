@@ -24,7 +24,7 @@ class PostListMixin(ListView):
     template_name = 'blog/index.html'
 
     def get_queryset(self):
-        self.select_posts = Post.objects.filter(
+        return Post.objects.filter(
             is_published=True,
             category__is_published=True,
             pub_date__lte=timezone.now(),
@@ -35,7 +35,6 @@ class PostListMixin(ListView):
         ).select_related(
             'author', 'category', 'location'
         )
-        return self.select_posts
 
 
 class PostCommentMixin:
@@ -67,6 +66,7 @@ class CommentMixin:
 
 class PostListView(PostListMixin):
     """Список постов на главной странице"""
+    pass
 
 
 class CategoryListView(PostListMixin):
@@ -219,10 +219,7 @@ class PostDeleteView(LoginRequiredMixin, PostCommentMixin, DeleteView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = PostForm()
-        context['form'].instance.post = get_object_or_404(
-            Post, pk=self.kwargs['post_id']
-        )
+        context['form'] = PostForm(instance=self.object)
         return context
 
 
@@ -241,9 +238,11 @@ class CommentUpdateView(
     LoginRequiredMixin, CommentMixin, PostCommentMixin, UpdateView
 ):
     """Обновление коментария"""
+    pass
 
 
 class CommentDeleteView(
     LoginRequiredMixin, CommentMixin, PostCommentMixin, DeleteView
 ):
     """Удаление комментария"""
+    pass

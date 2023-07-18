@@ -21,20 +21,24 @@ class PostListMixin(ListView):
 
     model = Post
     paginate_by = NUM_OF_POSTS
-    select_posts = Post.objects.filter(
-        is_published=True,
-        category__is_published=True,
-        pub_date__lte=timezone.now(),
-    ).annotate(
-        num_comments=Count('comments')
-    ).order_by(
-        '-pub_date'
-    ).select_related(
-        'author'
-    )
+    template_name = 'blog/index.html'
+
+    def get_queryset(self):
+        self.select_posts = Post.objects.filter(
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=timezone.now(),
+        ).annotate(
+            num_comments=Count('comments')
+        ).order_by(
+            '-pub_date'
+        ).select_related(
+            'author', 'category', 'location'
+        )
+        return self.select_posts
 
 
-class PostMixin:
+class PostCommentMixin:
 
     model = Post
     template_name = 'blog/create.html'
@@ -64,11 +68,6 @@ class CommentMixin:
 class PostListView(PostListMixin):
     """Список постов на главной странице"""
 
-    template_name = 'blog/index.html'
-
-    def get_queryset(self):
-        return self.select_posts
-
 
 class CategoryListView(PostListMixin):
     """Обрабатывает запрос на получение постов определённой категории."""
@@ -79,7 +78,7 @@ class CategoryListView(PostListMixin):
         self.category = get_object_or_404(
             Category, is_published=True, slug=self.kwargs['post_category']
         )
-        return self.select_posts.filter(
+        return super().get_queryset().filter(
             category__slug=self.kwargs['post_category']
         )
 
@@ -102,7 +101,7 @@ class ProfileDetailView(PostListMixin):
         )
 
         if self.profile != self.request.user:
-            queryset = self.select_posts.filter(
+            queryset = super().get_queryset().filter(
                 author__username=self.kwargs['username']
             )
         else:
@@ -113,7 +112,7 @@ class ProfileDetailView(PostListMixin):
             ).order_by(
                 '-pub_date'
             ).select_related(
-                'author'
+                'author', 'category', 'location'
             )
         return queryset
 
@@ -126,8 +125,8 @@ class ProfileDetailView(PostListMixin):
 class UserCreateView(CreateView):
     """Создание нового профиля"""
 
-    template_name = 'registration/registration_form.html',
-    form_class = UserCreationForm,
+    template_name = 'registration/registration_form.html'
+    form_class = UserCreationForm
 
     def get_success_url(self):
         return reverse('blog:index')
@@ -168,18 +167,19 @@ class PostDetailView(DetailView):
                 ),
                 pk=self.kwargs['post_id']
             )
-        return get_object_or_404(Post, (
-            Q(is_published=True)
-            & Q(category__is_published=True)
-            & Q(pub_date__lte=timezone.now())
-        ),
-            pk=self.kwargs['post_id'])
+        return get_object_or_404(
+            Post,
+            is_published=True,
+            category__is_published=True,
+            pub_date__lte=timezone.now(),
+            pk=self.kwargs['post_id']
+        )
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['form'] = CommentForm()
         context['comments'] = (
-            self.object.comments.select_related('author')
+            self.object.comments.select_related('author', 'post')
         )
         return context
 
@@ -202,13 +202,13 @@ class PostCreateView(LoginRequiredMixin, CreateView):
         )
 
 
-class PostUpdateView(PostMixin, LoginRequiredMixin, UpdateView):
+class PostUpdateView(LoginRequiredMixin, PostCommentMixin, UpdateView):
     """Обрабатывает запрос на Редактирование поста"""
 
     form_class = PostForm
 
 
-class PostDeleteView(PostMixin, LoginRequiredMixin, DeleteView):
+class PostDeleteView(LoginRequiredMixin, PostCommentMixin, DeleteView):
     """Обрабатывает запрос на Удаление поста"""
 
     def get_success_url(self):
@@ -226,7 +226,7 @@ class PostDeleteView(PostMixin, LoginRequiredMixin, DeleteView):
         return context
 
 
-class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
+class CommentCreateView(LoginRequiredMixin, CommentMixin, CreateView):
     """Создание комментария."""
 
     def form_valid(self, form):
@@ -237,23 +237,13 @@ class CommentCreateView(CommentMixin, LoginRequiredMixin, CreateView):
         return super().form_valid(form)
 
 
-class CommentUpdateView(CommentMixin, LoginRequiredMixin, UpdateView):
+class CommentUpdateView(
+    LoginRequiredMixin, CommentMixin, PostCommentMixin, UpdateView
+):
     """Обновление коментария"""
 
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_object().author != self.request.user:
-            return redirect(reverse(
-                'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}
-            ))
-        return super().dispatch(request, *args, **kwargs)
 
-
-class CommentDeleteView(CommentMixin, DeleteView):
+class CommentDeleteView(
+    LoginRequiredMixin, CommentMixin, PostCommentMixin, DeleteView
+):
     """Удаление комментария"""
-
-    def dispatch(self, request, *args, **kwargs):
-        if self.get_object().author != self.request.user:
-            return redirect(reverse(
-                'blog:post_detail', kwargs={'post_id': self.kwargs['post_id']}
-            ))
-        return super().dispatch(request, *args, **kwargs)

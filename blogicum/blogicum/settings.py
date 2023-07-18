@@ -93,6 +93,8 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LOGIN_REDIRECT_URL = 'blog:index'
 
+LOGIN_URL = 'login'
+
 """ Language code English 'en-us'
     Language code Russian 'ru-RU'"""
 LANGUAGE_CODE = 'ru-RU'

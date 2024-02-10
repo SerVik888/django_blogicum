@@ -7,6 +7,8 @@ SECRET_KEY = 'django-insecure-$el%fi6-%cykqen^+#awdl0sjx(6hf(65kn&0w%$t66k*=(k67
 DEBUG = True
 
 ALLOWED_HOSTS = [
+    # 'www.SerVik888.pythonanywhere.com',
+    # 'SerVik888.pythonanywhere.com',
     'localhost',
     '127.0.0.1'
 ]
